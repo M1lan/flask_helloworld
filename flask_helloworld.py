@@ -8,7 +8,6 @@ import subprocess
 from flask import Flask, jsonify
 from flask.ext.hookserver import Hooks
 
-
 app = Flask(__name__)
 app.config['GITHUB_WEBHOOKS_KEY'] = os.environ['SECRET']
 hooks = Hooks(app, url='/self-deploy')
