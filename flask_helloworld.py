@@ -4,13 +4,23 @@
 
 import os
 import subprocess
-
 from flask import Flask, jsonify
 from flask.ext.hookserver import Hooks
 
 app = Flask(__name__)
 app.config['GITHUB_WEBHOOKS_KEY'] = os.environ['SECRET']
 hooks = Hooks(app, url='/self-deploy')
+
+
+@hooks.hook('push')
+def self_deploy():
+    try:
+        output = subprocess.check_output(['git', 'pull', '--ff-only',
+                                          'origin', 'master'], )
+        print output
+    except subprocess.CalledProcessError as err:
+        return err.output
+    return jsonify(dict(output))
 
 
 class InvalidAPIUsage(Exception):
