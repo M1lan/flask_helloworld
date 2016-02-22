@@ -3,14 +3,17 @@
 # Time-stamp: <2016-02-22 milan.santosi@gmail.com>
 
 import os
-import hmac
-import hashlib
 import subprocess
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify
+from flask.ext.hookserver import Hooks
 
-SECRET = os.environ['SECRET']
+
 app = Flask(__name__)
+app.config['GITHUB_WEBHOOKS_KEY'] = os.environ['SECRET']
+
+hooks = Hooks(app, url='/hooks')
+SECRET = 'LOL'
 
 
 class InvalidAPIUsage(Exception):
@@ -56,33 +59,6 @@ def version():
                          stdin=subprocess.PIPE)
     out, err = p.communicate()
     return out
-
-
-# c.f. https://pypi.python.org/pypi/pywebhooks
-def verify_hmac_hash(incoming_json, secret_key, incoming_signature):
-    signature = hmac.new(secret_key,
-                         str(incoming_json),
-                         digestmod=hashlib.sha1).hexdigest()
-    try:
-        return hmac.compare_digest(bytes(signature), bytes(incoming_signature))
-    except Exception as e:
-        raise InvalidAPIUsage('ERROR:' + str(e), status_code=400)
-
-
-# c.f. https://developer.github.com/webhooks/securing/
-@app.route("/self-deploy/{}".format(SECRET), methods=['POST'])
-def self_deploy():
-    signature = request.headers['X-Hub-Signature']
-    payload = request.get_json()
-
-    if verify_hmac_hash(payload, SECRET, signature):
-        try:
-            output = subprocess.check_output(['git', 'pull', '--ff-only',
-                                              'origin', 'master'], )
-            print output
-        except subprocess.CalledProcessError as err:
-            return err.output
-    return jsonify(dict(ok=True))
 
 
 if __name__ == "__main__":
