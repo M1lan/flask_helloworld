@@ -15,8 +15,8 @@ hooks = Hooks(app, url='/self-deploy')
 @hooks.hook('push')
 def self_deploy():
     try:
-        output = subprocess.check_output(['git', 'pull', '--ff-only',
-                                          'origin', 'master'], )
+        output = subprocess.check_output(['git', 'pull', '--ff-only', 'origin',
+                                          'master'], )
         print output
     except subprocess.CalledProcessError as err:
         return err.output
