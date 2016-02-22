@@ -11,9 +11,7 @@ from flask.ext.hookserver import Hooks
 
 app = Flask(__name__)
 app.config['GITHUB_WEBHOOKS_KEY'] = os.environ['SECRET']
-
-hooks = Hooks(app, url='/hooks')
-SECRET = 'LOL'
+hooks = Hooks(app, url='/self-deploy')
 
 
 class InvalidAPIUsage(Exception):
